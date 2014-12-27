@@ -1,0 +1,68 @@
+{
+  "builders": [
+    {
+      "type": "vmware-iso",
+      "name": "ubuntu-{{ user `ubuntu_release` }}-server-amd64",
+      "guest_os_type": "ubuntu-64",
+      "iso_url": "http://releases.ubuntu.com/{{ user `ubuntu_release` }}/ubuntu-{{ user `ubuntu_release` }}-server-amd64.iso",
+      "iso_checksum": "{{ user `ubuntu_iso_sha256` }}",
+      "iso_checksum_type": "sha256",
+      "http_directory": "http",
+      "ssh_username": "vagrant",
+      "ssh_password": "vagrant",
+      "boot_wait": "10s",
+      "fusion_app_path": "{{ user `fusion_app_path` }}",
+      "shutdown_command": "echo vagrant | sudo -S shutdown -P now",
+      "boot_command": [
+        "<esc><esc><enter><wait>",
+        "/install/vmlinuz noapic ",
+        "preseed/url=http://{{ .HTTPIP }}:{{ .HTTPPort }}/preseed_{{ user `ubuntu_release` }}.cfg ",
+        "debian-installer=en_US auto locale=en_US kbd-chooser/method=us ",
+        "hostname={{ .Name }} ",
+        "fb=false debconf/frontend=noninteractive ",
+        "keyboard-configuration/modelcode=SKIP keyboard-configuration/layout=USA ",
+        "keyboard-configuration/variant=USA console-setup/ask_detect=false ",
+        "initrd=/install/initrd.gz -- ",
+        "<enter>"
+      ],
+      "tools_upload_flavor": "linux"
+    },
+    {
+      "type": "null",
+      "host": "{{ user `null_host` }}",
+      "ssh_username": "vagrant",
+      "ssh_password": "vagrant"
+    }
+  ],
+  "provisioners": [
+    {
+      "type": "shell",
+      "execute_command": "{{ .Vars }} sudo -E -S sh '{{ .Path }}'",
+      "script": "scripts/vmware.sh"
+    },
+    {
+      "type": "shell",
+      "execute_command": "{{ .Vars }} sudo -E -S sh '{{ .Path }}'",
+      "inline": [
+        "sleep 30",
+        "/usr/bin/apt-get -y install software-properties-common",
+        "/usr/bin/apt-add-repository -y ppa:ansible/ansible",
+        "/usr/bin/apt-get update",
+        "/usr/bin/apt-get -y install ansible"
+      ]
+    },
+    {
+      "type": "ansible-local",
+      "playbook_file": "../ansible/bootstrap.yml",
+      "playbook_dir": "../ansible",
+      "group_vars": "group_vars"
+    }
+  ],
+  "post-processors": ["vagrant"],
+  "variables": {
+    "ubuntu_release": "14.04.1",
+    "ubuntu_iso_sha256": "946a6077af6f5f95a51f82fdc44051c7aa19f9cfc5f737954845a6050543d7c2",
+    "fusion_app_path": "/Applications/VMWare Fusion.app",
+    "null_host": "127.0.0.1"
+  }
+}
