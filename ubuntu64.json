@@ -25,7 +25,8 @@
         "initrd=/install/initrd.gz -- ",
         "<enter>"
       ],
-      "tools_upload_flavor": "linux"
+      "tools_upload_flavor": "linux",
+      "version": "10"
     },
     {
       "type": "null",
@@ -58,7 +59,7 @@
       "group_vars": "group_vars"
     }
   ],
-  "post-processors": ["vagrant"],
+  "post-processors": [ "vagrant" ],
   "variables": {
     "ubuntu_release": "14.04.1",
     "ubuntu_iso_sha256": "946a6077af6f5f95a51f82fdc44051c7aa19f9cfc5f737954845a6050543d7c2",
